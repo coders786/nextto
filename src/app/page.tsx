@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '@/lib/store'
 import { useSocket } from '@/hooks/use-socket'
 import { useScreenCapture } from '@/hooks/use-screen-capture'
+import { useVoiceRecorder } from '@/hooks/use-voice-recorder'
 import { PERSONALITIES, TOOLS, SCREEN_CAPTURE, ONBOARDING_STEPS } from '@/lib/constants'
 import type { PersonalityType, OnboardingStep, ChatMessage, DailyQuest, SkillProgress } from '@/lib/types'
 
@@ -976,6 +977,7 @@ function SessionView() {
   const [inputText, setInputText] = useState('')
   const [isVoiceActive, setIsVoiceActive] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
+  const voiceRecorder = useVoiceRecorder()
   const [showMistakes, setShowMistakes] = useState(false)
   const [showScreenPreview, setShowScreenPreview] = useState(false)
   const [showProgress, setShowProgress] = useState(false)
@@ -1205,9 +1207,26 @@ function SessionView() {
     resetSession()
   }, [screenCapture, session.sessionId, emitSessionEnd, endSession, resetSession])
 
-  const toggleVoice = useCallback(() => {
-    setIsVoiceActive(prev => !prev)
-  }, [])
+  const toggleVoice = useCallback(async () => {
+    if (voiceRecorder.isRecording) {
+      // Stop recording and transcribe
+      const audioBase64 = await voiceRecorder.stopRecording()
+      setIsVoiceActive(false)
+      
+      if (audioBase64) {
+        // Transcribe the audio
+        const transcript = await voiceRecorder.transcribeAudio(audioBase64)
+        if (transcript.trim()) {
+          // Send the transcribed text as a message
+          handleSendMessage(transcript)
+        }
+      }
+    } else {
+      // Start recording
+      setIsVoiceActive(true)
+      await voiceRecorder.startRecording()
+    }
+  }, [voiceRecorder, handleSendMessage])
 
   const handleQuickReply = useCallback((text: string) => {
     handleSendMessage(text)
@@ -1489,20 +1508,42 @@ function SessionView() {
                   variant="ghost"
                   size="sm"
                   className={`h-10 w-10 p-0 rounded-full cursor-pointer transition-colors duration-200 ${
-                    isVoiceActive
+                    voiceRecorder.isRecording
                       ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
                       : 'text-[#6b5f52] hover:text-[#a89f94] hover:bg-[#1e1a17]'
                   }`}
                 >
-                  {isVoiceActive ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                  {voiceRecorder.isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                 </Button>
-                {/* Recording animation */}
-                {isVoiceActive && (
-                  <motion.div
-                    className="absolute inset-0 rounded-full border-2 border-red-400/40"
-                    animate={{ scale: [1, 1.3, 1], opacity: [0.6, 0, 0.6] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  />
+                {/* Recording pulse animation */}
+                {voiceRecorder.isRecording && (
+                  <>
+                    <motion.div
+                      className="absolute inset-0 rounded-full border-2 border-red-400/40"
+                      animate={{ 
+                        scale: [1, 1.2 + (voiceRecorder.audioLevel / 100) * 0.3, 1], 
+                        opacity: [0.6, 0, 0.6] 
+                      }}
+                      transition={{ duration: 1.2, repeat: Infinity }}
+                    />
+                    {/* Audio level ring */}
+                    <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 40 40">
+                      <circle
+                        cx="20" cy="20" r="18"
+                        fill="none"
+                        stroke="rgba(239, 68, 68, 0.3)"
+                        strokeWidth="2"
+                        strokeDasharray={`${(voiceRecorder.audioLevel / 100) * 113} 113`}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    {/* Recording duration */}
+                    {voiceRecorder.recordingDuration > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] rounded-full px-1 min-w-[16px] text-center">
+                        {voiceRecorder.recordingDuration}s
+                      </span>
+                    )}
+                  </>
                 )}
               </motion.div>
 
