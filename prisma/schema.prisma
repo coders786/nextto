@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(cuid())
+  email           String?  @unique
+  name            String?
+  avatarUrl       String?
+  personalityType String?  @default("chill") // chill, drill_sergeant, patient, hype
+  learningGoal    String?  // e.g. "run ads for my candle business"
+  learningTool    String?  // e.g. "google_ads", "figma", "shopify"
+  businessContext  String?  // e.g. "candle business"
+  tier            String   @default("free") // free, pro
+  preferredTime   String?  // e.g. "20:00"
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  sessions    Session[]
+  mistakes    Mistake[]
+  quests      DailyQuest[]
+  messages    Message[]
+  learnings   LearningProgress[]
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  userId      String
+  tool        String   // google_ads, figma, shopify, etc.
+  status      String   @default("active") // active, paused, completed
+  screenShared Boolean @default(false)
+  mood        String?  // focused, slow, tired, energetic
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@index([userId])
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  sessionId  String
+  userId     String
+  role       String   // user, assistant, system
+  content    String
+  source     String?  // text, voice, screen
+  screenData String?  // base64 screenshot if source=screen
+  aiContext  String?  // what the AI saw/used to generate this response
+  createdAt  DateTime @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([userId])
+}
+
+model Mistake {
+  id          String   @id @default(cuid())
+  userId      String
+  category    String   // budget_too_high, skipped_audience, too_many_keywords, etc.
+  description String
+  context     String?  // what was happening when the mistake was made
+  frequency   Int      @default(1)
+  resolved    Boolean  @default(false)
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([category])
+}
+
+model LearningProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  tool        String
+  skill       String   // e.g. "keywords", "bidding", "ad_copy"
+  level       Float    @default(0.0) // 0.0 to 1.0 (Bayesian Knowledge Tracing)
+  evidence    String?  // JSON: array of evidence for/against mastery
+  lastTested  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tool, skill])
+  @@index([userId])
+}
+
+model DailyQuest {
+  id          String   @id @default(cuid())
+  userId      String
+  quest       String
+  completed   Boolean  @default(false)
+  questDate   DateTime @default(now())
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([questDate])
+}
+
+model CommunityRoom {
+  id          String   @id @default(cuid())
+  name        String
+  tool        String
+  goal        String   // shared learning goal
+  maxMembers  Int      @default(20)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model RoomMember {
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String
+  role      String   @default("member") // member, moderator
+  joinedAt  DateTime @default(now())
+
+  @@unique([roomId, userId])
+}
+
+model MorningText {
+  id        String   @id @default(cuid())
+  userId    String
+  message   String
+  sent      Boolean  @default(false)
+  sentAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([sent])
+}
+
+model WinMoment {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String
+  celebrated  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+}
