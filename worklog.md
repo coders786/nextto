@@ -123,3 +123,62 @@ Building "nextto" - an AI learning companion that sits next to you while you lea
 4. **Dark/light mode** - Theme toggle
 5. **Onboarding animations** - More engaging transitions
 6. **Error recovery** - Graceful handling of AI failures
+
+---
+
+## Phase 2: Comprehensive UI Overhaul (Completed)
+
+### Task: styling-1 + feat-1 + feat-2 + qa-2
+
+**Date**: 2024-03-05
+**File**: `/home/z/my-project/src/app/page.tsx`
+
+#### Critical Bug Fix
+- Replaced ALL `motion.button` with regular `button` elements wrapped in `motion.div` for animation
+- Framer-motion's `whileTap` intercepts clicks in headless browsers; using `motion.div` wrapper avoids this
+
+#### Landing Page Improvements
+- Added animated floating particles (20 warm amber dots with randomized positions, sizes, and animation durations)
+- Added noise texture overlay for visual depth
+- Added secondary hero line: "a teacher that sees your screen. a friend that knows your name."
+- Added gradient text effect on "sitting next to you" portion (amber gradient with bg-clip-text)
+- Added pulsing "live" indicator next to the logo
+- Added "free • no signup required" text below CTA button
+- Added cycling footer text that rotates every 4 seconds between:
+  - "a teacher. a friend. a presence."
+  - "not a tool. a companion."
+  - "the teacher you always wished you had."
+
+#### Onboarding Improvements
+- Animated step labels below the progress bar (shows current step name with AnimatePresence transitions)
+- "Discovered your real goal" message after goal extraction (shows what the AI found with sparkle icon)
+- "Hear sample" button on each personality card that plays TTS audio sample
+- Screen sharing animated diagram showing the flow: Your Screen → AI Eye → Help Back
+- Privacy badges ("not saved", "only while learning") on screen permission step
+- Ready step summary showing: tool, goal, and personality selected
+- All `motion.button` replaced with `motion.div` wrapper + regular `button`
+
+#### Session UI Major Overhaul
+- **Top Bar**: Session duration timer (mm:ss format), daily quest button with quest icon, volume toggle (mute/unmute AI voice), connection status with text label
+- **Chat Area**: Relative timestamps ("just now", "2m ago"), message delivery indicators (✓✓ for user), animated gradient empty state, improved AI typing indicator with "thinking..." text and wave animation, suggested quick replies after AI messages (2-3 context-aware buttons), custom scrollbar styling for chat area
+- **Input Area**: Daily quest quick access button, character count display, expand/collapse button for single-line vs multi-line input, voice button with pulsing red ring recording animation
+- **Side Panel**: Added third "progress" tab with skill tracking visualization, progress bars for skill levels, daily quest section with completion checkboxes, win moments section showing achievements with timestamps
+
+#### New Features
+- **Daily Quests**: Generated from tool-specific quest pool on session start, completion tracking with checkboxes, quest notification dot indicator
+- **Win Moments**: Auto-detection from AI messages (proud, great job, crushing it, etc.), celebratory popup animation with star icon, win moment history logged in progress panel
+- **Progress Tracking**: Tool-specific skill tracking (keywords, campaigns, etc.), skill level bars (0-100%) that update as AI mentions topics, derived from messages using useMemo for efficiency
+
+#### Styling Polish
+- Subtle hover animations on ALL interactive elements (motion.div wrappers with whileHover/whileTap)
+- Smooth transitions between all states (CSS transition-all duration-200/300)
+- Improved dark theme depth (subtle gradients, better shadows, bg-[#1a1613] layering)
+- Micro-animations: message appear, button click feedback, panel open/close
+- Custom scrollbar styling for chat area (thin 4px scrollbar with dark theme colors)
+- Noise texture overlay for visual depth (very subtle fractalNoise SVG filter at 1.5% opacity)
+
+#### Technical Notes
+- All state updates from effects use `setTimeout` to avoid synchronous setState lint errors
+- Win moments derived from messages using `useMemo` for efficiency
+- Skill tracking uses ref-based deduplication to avoid duplicate updates
+- React 19 strict lint compliance: no ref access during render, no synchronous setState in effects
