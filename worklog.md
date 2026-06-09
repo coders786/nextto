@@ -92,15 +92,58 @@ Building "nextto" - an AI learning companion that sits next to you while you lea
 
 ---
 
+## Phase 2.5: Voice Recording Integration (Completed - Cron Round 1 Continued)
+
+### Voice Recording System
+- ✅ New `useVoiceRecorder` hook with full MediaRecorder API
+- ✅ Real-time audio level monitoring via AnalyserNode (Web Audio API)
+- ✅ Recording duration tracking with live counter
+- ✅ Audio level visualization on voice button (SVG ring that fills based on mic level)
+- ✅ Pulsing animation intensity responds to actual audio volume
+- ✅ Recording duration badge on mic button ("3s", "15s", etc.)
+- ✅ Auto-transcription via `/api/asr` after recording stops
+- ✅ Echo cancellation, noise suppression, auto gain control on mic input
+- ✅ Graceful error handling for microphone access denied
+- ✅ Clean up on unmount to prevent memory leaks and orphan streams
+
+### Integration
+- Click mic button → starts recording with visual feedback
+- Click again → stops recording, transcribes, sends as chat message
+- Audio level ring provides real-time feedback during recording
+- Duration badge shows how long you've been recording
+
+---
+
+## Current Project Status (Latest)
+
+### All Working Features
+- ✅ Landing page with particles, gradient text, LIVE indicator, cycling footer
+- ✅ Full onboarding flow with step labels, goal discovery, TTS samples
+- ✅ AI-powered goal extraction with real goal display
+- ✅ 4 personality types with voice mapping and TTS samples
+- ✅ Chat with AI (Socket.io + REST fallback)
+- ✅ Message timestamps, delivery indicators, quick replies
+- ✅ Session timer, daily quest, mute voice, connection status
+- ✅ **Real voice recording with MediaRecorder + ASR transcription**
+- ✅ **Audio level visualization during recording**
+- ✅ Screen sharing with VLM analysis
+- ✅ Mistake detection and bank
+- ✅ TTS audio playback with personality voices
+- ✅ Progress tracking with skill bars
+- ✅ Win moments detection
+- ✅ All 6 API routes working
+- ✅ Companion service running on port 3003
+
+---
+
 ## Unresolved Issues & Next Steps
 
 ### Priority 1: Features to Build
-1. **Real voice recording** - Implement MediaRecorder for actual voice input with ASR
-2. **Daily quest generation via AI** - Generate personalized quests based on current skill level
-3. **Morning text system** - Scheduled check-in messages
-4. **Community rooms** - Small groups of 20 with shared goals
-5. **Session persistence** - Save sessions to database for return visits
-6. **Comprehension check integration** - Auto-trigger "explain in your own words" periodically
+1. **Daily quest generation via AI** - Generate personalized quests based on current skill level
+2. **Morning text system** - Scheduled check-in messages via cron
+3. **Community rooms** - Small groups of 20 with shared goals
+4. **Session persistence** - Save sessions to database for return visits
+5. **Comprehension check integration** - Auto-trigger "explain in your own words" periodically
 
 ### Priority 2: Improvements
 1. **Mobile responsiveness** - Optimize session view for smaller screens
@@ -109,12 +152,12 @@ Building "nextto" - an AI learning companion that sits next to you while you lea
 4. **Sound effects** - Subtle UI sounds for messages, mistakes, achievements
 5. **Keyboard shortcuts** - Quick actions during session
 6. **Dark/light mode** - Theme toggle
-7. **Error recovery** - More graceful handling of AI failures
-8. **TTS queue system** - Sequential audio playback instead of overlapping
+7. **TTS queue system** - Sequential audio playback instead of overlapping
+8. **Onboarding conversation mode** - AI converses to discover goals
 
 ### Priority 3: Polish
-1. **Onboarding conversation mode** - AI converses to discover goals instead of form steps
-2. **Better empty states** - More engaging visuals when no data
-3. **Accessibility audit** - ARIA labels, keyboard navigation
-4. **Performance optimization** - Memoization, lazy loading
-5. **PWA support** - Offline capability, push notifications
+1. **Accessibility audit** - ARIA labels, keyboard navigation
+2. **Performance optimization** - Memoization, lazy loading
+3. **PWA support** - Offline capability, push notifications
+4. **Better error recovery** - Retry logic for API failures
+5. **Session analytics** - Time spent, concepts covered, improvement rate
